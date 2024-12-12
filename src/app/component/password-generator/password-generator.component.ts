@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
+import { PasswordDisplayComponent } from '../password-display/password-display.component';
 
 @Component({
   selector: 'app-password-generator',
   standalone: true,
-  imports: [],
+  imports: [PasswordDisplayComponent],
   templateUrl: './password-generator.component.html',
-  styleUrl: './password-generator.component.css'
+  styleUrl: './password-generator.component.css',
 })
-export class PasswordGeneratorComponent {
-
-}
+export class PasswordGeneratorComponent {}
