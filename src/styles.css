@@ -37,7 +37,7 @@
   input[type="range"]::-webkit-slider-thumb {
     @apply size-7 rounded-full border-none bg-text-light;
     -webkit-appearance: none;
-    margin-top: -14px; /* Centers the thumb vertically (half of track height - half of thumb height) */
+    margin-top: -10px; /* Centers the thumb vertically (half of track height - half of thumb height) */
   }
 
   input[type="range"]::-moz-range-thumb {
