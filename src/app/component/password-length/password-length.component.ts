@@ -35,8 +35,6 @@ export class PasswordLengthComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
 
     this.length$ = this.passwordOptionsService.length$;
-
-
     
     // Subscribe to value changes with debounce
     this.lengthControl.valueChanges
