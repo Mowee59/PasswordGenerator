@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { PasswordGeneratorComponent } from './component/password-generator/password-generator.component';
+import { PasswordGeneratorComponent } from './components/password-generator/password-generator.component';
 
 @Component({
   selector: 'app-root',
