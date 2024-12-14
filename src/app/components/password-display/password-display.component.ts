@@ -18,4 +18,6 @@ export class PasswordDisplayComponent {
   ngOnInit(): void {
     this.password$ = this.passwordGeneratorService.password$;
   }
+
+
 }
