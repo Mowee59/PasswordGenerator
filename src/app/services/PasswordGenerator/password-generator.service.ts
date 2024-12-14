@@ -40,6 +40,31 @@ export class PasswordGeneratorService {
     ),
   );
 
+  passwordStrength$ = combineLatest([
+    this.passwordOptionsService.length$,
+    this.passwordOptionsService.includeUppercase$,
+    this.passwordOptionsService.includeLowercase$,
+    this.passwordOptionsService.includeNumbers$,
+    this.passwordOptionsService.includeSymbols$,
+  ]).pipe(
+    map(
+      ([
+        length,
+        includeUppercase,
+        includeLowercase,
+        includeNumbers,
+        includeSymbols,
+      ]) =>
+        this.evaluatePasswordStrength(
+          length,
+          includeUppercase,
+          includeLowercase,
+          includeNumbers,
+          includeSymbols,
+        ),
+    ),
+  );
+
   /**
    * Generates a random password based on the specified criteria
    * @param length - The desired length of the password
@@ -73,6 +98,65 @@ export class PasswordGeneratorService {
       password += charset[randomIndex];
     }
     return password;
+  }
+
+  /**
+   * Evaluates the strength of a password based on its length and character variety.
+   * @param length - The length of the password
+   * @param includeUppercase - Whether the password includes uppercase letters
+   * @param includeLowercase - Whether the password includes lowercase letters
+   * @param includeNumbers - Whether the password includes numbers
+   * @param includeSymbols - Whether the password includes symbols
+   * @returns A strength value from 1 (weak) to 4 (strong)
+   */
+  private evaluatePasswordStrength(
+    length: number,
+    includeUppercase: boolean,
+    includeLowercase: boolean,
+    includeNumbers: boolean,
+    includeSymbols: boolean,
+  ): number {
+    // Base score starts at 0
+    let strength = 0;
+
+    // If no options selected, force weak password
+    if (
+      !includeUppercase &&
+      !includeLowercase &&
+      !includeNumbers &&
+      !includeSymbols
+    ) {
+      strength = 1;
+      return strength;
+    } else if (length < 8) {
+      // Length-based scoring
+      strength = 1; // Too short - automatically weak
+    } else {
+      // Add points based on length
+      if (length >= 8) strength += 1;
+      if (length >= 12) strength += 1;
+      if (length >= 16) strength += 1;
+
+      // Add points for character variety
+      let varietyCount = 0;
+      if (includeUppercase) varietyCount++;
+      if (includeLowercase) varietyCount++;
+      if (includeNumbers) varietyCount++;
+      if (includeSymbols) varietyCount++;
+
+      // Bonus points based on character variety
+      if (varietyCount >= 2) strength += 1;
+      if (varietyCount >= 3) strength += 1;
+      if (varietyCount === 4) strength += 1;
+
+      // Penalize if only one character type is used
+      if (varietyCount === 1) {
+        strength = Math.max(1, strength - 2);
+      }
+    }
+
+    // Normalize to 1-4 range
+    return Math.max(1, Math.min(4, strength));
   }
 
   // Inject the PasswordOptionsService to access password options
