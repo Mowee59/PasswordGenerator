@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PasswordLengthComponent } from '../password-length/password-length.component';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { PasswordOptionsService } from '../../services/PasswordOptions/password-options.service';
+import { Subject, takeUntil } from 'rxjs';
 
 /**
  * Component responsible for managing password generation options through form controls.
@@ -15,7 +16,10 @@ import { PasswordOptionsService } from '../../services/PasswordOptions/password-
   templateUrl: './password-option.component.html',
   styleUrl: './password-option.component.css',
 })
-export class PasswordOptionComponent {
+export class PasswordOptionComponent implements OnInit, OnDestroy {
+  // Destroy subscription
+  private destroy$ = new Subject<void>();
+
   /**
    * Injects the PasswordOptionsService to communicate password option changes
    * @param passwordOptionsService Service that manages password generation options
@@ -50,37 +54,51 @@ export class PasswordOptionComponent {
    * Lifecycle hook that initializes subscriptions to form control changes.
    * Sets up observers for each checkbox control that update the PasswordOptionsService
    * whenever the user changes a checkbox value.
-   * 
+   *
    * Each subscription includes a null check to ensure only valid boolean values
    * are passed to the service methods.
    */
   ngOnInit(): void {
     // Subscribe to uppercase checkbox changes
-    this.includeUppercaseControl.valueChanges.subscribe((value) => {
-      if (value !== null) {
-        this.passwordOptionsService.setIncludeUppercase(value);
-      }
-    });
+    this.includeUppercaseControl.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((value) => {
+        if (value !== null) {
+          this.passwordOptionsService.setIncludeUppercase(value);
+        }
+      });
 
     // Subscribe to numbers checkbox changes
-    this.includeNumbersControl.valueChanges.subscribe((value) => {
-      if (value !== null) {
-        this.passwordOptionsService.setIncludeNumbers(value);
-      }
-    });
+    this.includeNumbersControl.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((value) => {
+        if (value !== null) {
+          this.passwordOptionsService.setIncludeNumbers(value);
+        }
+      });
 
     // Subscribe to symbols checkbox changes
-    this.includeSymbolsControl.valueChanges.subscribe((value) => {
-      if (value !== null) {
-        this.passwordOptionsService.setIncludeSymbols(value);
-      }
-    });
+    this.includeSymbolsControl.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((value) => {
+        if (value !== null) {
+          this.passwordOptionsService.setIncludeSymbols(value);
+        }
+      });
 
     // Subscribe to lowercase checkbox changes
-    this.includeLowercaseControl.valueChanges.subscribe((value) => {
-      if (value !== null) {
-        this.passwordOptionsService.setIncludeLowercase(value);
-      }
-    });
+    this.includeLowercaseControl.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((value) => {
+        if (value !== null) {
+          this.passwordOptionsService.setIncludeLowercase(value);
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    // Unsubscribe from all subscriptions
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
