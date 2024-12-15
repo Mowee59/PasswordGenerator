@@ -4,19 +4,34 @@ import { combineLatest, map, BehaviorSubject } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 /**
- * Service responsible for generating passwords based on user-selected options.
+ * Service responsible for generating secure passwords based on user-selected options.
  * Uses reactive streams to automatically generate new passwords when options change.
+ * Provides password strength evaluation based on entropy calculations.
  */
 @Injectable({
   providedIn: 'root',
 })
 export class PasswordGeneratorService {
-  // Subject to trigger password regeneration
+  /** Character set for uppercase letters A-Z */
+  private readonly UPPERCASE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  
+  /** Character set for lowercase letters a-z */
+  private readonly LOWERCASE_CHARS = 'abcdefghijklmnopqrstuvwxyz';
+  
+  /** Character set for numbers 0-9 */
+  private readonly NUMBER_CHARS = '0123456789';
+  
+  /** Character set for special symbols */
+  private readonly SYMBOL_CHARS = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+  /** Subject used to trigger manual password regeneration */
   private regeneratePasswordSubject = new BehaviorSubject<void>(undefined);
 
   /**
-   * Observable stream that emits a new password whenever password options change.
-   * Combines all password option streams and maps them to generate a new password.
+   * Observable stream that emits a new password whenever:
+   * - Password options (length, character sets) change
+   * - Manual regeneration is triggered
+   * Combines all password option streams and generates a new password based on the criteria.
    */
   password$ = combineLatest([
     this.passwordOptionsService.length$,
@@ -45,8 +60,13 @@ export class PasswordGeneratorService {
     ),
   );
 
+  /** Signal version of the password$ observable for use in templates */
   passwordSignal = toSignal(this.password$, { initialValue: '' });
 
+  /**
+   * Observable stream that emits a password strength value (1-4) whenever password options change.
+   * The strength is calculated based on password length and entropy.
+   */
   passwordStrength$ = combineLatest([
     this.passwordOptionsService.length$,
     this.passwordOptionsService.includeUppercase$,
@@ -73,7 +93,9 @@ export class PasswordGeneratorService {
   );
 
   /**
-   * Generates a random password based on the specified criteria
+   * Generates a cryptographically random password based on the specified criteria.
+   * The password will only include characters from the selected character sets.
+   * 
    * @param length - The desired length of the password
    * @param includeUppercase - Whether to include uppercase letters (A-Z)
    * @param includeLowercase - Whether to include lowercase letters (a-z)
@@ -89,10 +111,10 @@ export class PasswordGeneratorService {
     includeSymbols: boolean,
   ): string {
     let charset = '';
-    if (includeUppercase) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    if (includeLowercase) charset += 'abcdefghijklmnopqrstuvwxyz';
-    if (includeNumbers) charset += '0123456789';
-    if (includeSymbols) charset += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+    if (includeUppercase) charset += this.UPPERCASE_CHARS;
+    if (includeLowercase) charset += this.LOWERCASE_CHARS;
+    if (includeNumbers) charset += this.NUMBER_CHARS;
+    if (includeSymbols) charset += this.SYMBOL_CHARS;
 
     let password = '';
 
@@ -108,7 +130,14 @@ export class PasswordGeneratorService {
   }
 
   /**
-   * Evaluates the strength of a password based on its length and character variety.
+   * Evaluates the strength of a password based on its length and entropy.
+   * The strength is calculated using the following criteria:
+   * - Length < 8: Weak (1)
+   * - Entropy < 28 bits: Very weak (1)
+   * - Entropy < 36 bits: Weak (2)
+   * - Entropy < 60 bits: Reasonable (3)
+   * - Entropy >= 60 bits: Strong (4)
+   * 
    * @param length - The length of the password
    * @param includeUppercase - Whether the password includes uppercase letters
    * @param includeLowercase - Whether the password includes lowercase letters
@@ -123,56 +152,71 @@ export class PasswordGeneratorService {
     includeNumbers: boolean,
     includeSymbols: boolean,
   ): number {
-    // Base score starts at 0
-    let strength = 0;
+    // Check length first - passwords less than 8 characters are weak
+    if (length < 8) return 1;  // Weak
 
-    // If no options selected, force weak password
-    if (
-      !includeUppercase &&
-      !includeLowercase &&
-      !includeNumbers &&
-      !includeSymbols
-    ) {
-      strength = 1;
-      return strength;
-    } else if (length < 8) {
-      // Length-based scoring
-      strength = 1; // Too short - automatically weak
-    } else {
-      // Add points based on length
-      if (length >= 8) strength += 1;
-      if (length >= 12) strength += 1;
-      if (length >= 16) strength += 1;
+    // Calculate entropy
+    const entropy = this.calculatePasswordEntropy(
+      length,
+      includeUppercase,
+      includeLowercase,
+      includeNumbers,
+      includeSymbols
+    );
 
-      // Add points for character variety
-      let varietyCount = 0;
-      if (includeUppercase) varietyCount++;
-      if (includeLowercase) varietyCount++;
-      if (includeNumbers) varietyCount++;
-      if (includeSymbols) varietyCount++;
-
-      // Bonus points based on character variety
-      if (varietyCount >= 2) strength += 1;
-      if (varietyCount >= 3) strength += 1;
-      if (varietyCount === 4) strength += 1;
-
-      // Penalize if only one character type is used
-      if (varietyCount === 1) {
-        strength = Math.max(1, strength - 2);
-      }
-    }
-
-    // Normalize to 1-4 range
-    return Math.max(1, Math.min(4, strength));
+    // Return strength based on entropy thresholds
+    if (entropy < 28) return 1;  // Very weak
+    if (entropy < 36) return 2;  // Weak
+    if (entropy < 60) return 3;  // Reasonable
+    return 4;  // Strong
   }
 
   /**
-   * Triggers a password regeneration by emitting a new event to the subject.
+   * Calculates the entropy (in bits) of a password based on its length and character set size.
+   * Entropy is calculated as: length * log2(charset_size)
+   * Higher entropy indicates a more secure password.
+   * 
+   * @param length - Length of the password
+   * @param includeUppercase - Whether uppercase letters are included
+   * @param includeLowercase - Whether lowercase letters are included
+   * @param includeNumbers - Whether numbers are included
+   * @param includeSymbols - Whether symbols are included
+   * @returns The calculated entropy in bits, or 0 if no character types are selected
+   */
+  private calculatePasswordEntropy(
+    length: number,
+    includeUppercase: boolean,
+    includeLowercase: boolean,
+    includeNumbers: boolean,
+    includeSymbols: boolean,
+  ): number {
+    let charsetSize = 0;
+
+    if (includeUppercase) charsetSize += this.UPPERCASE_CHARS.length;
+    if (includeLowercase) charsetSize += this.LOWERCASE_CHARS.length;
+    if (includeNumbers) charsetSize += this.NUMBER_CHARS.length;
+    if (includeSymbols) charsetSize += this.SYMBOL_CHARS.length;
+
+    if (charsetSize === 0) {
+      return 0; // No character types selected
+    }
+
+    // Calculate entropy
+    const entropy = length * Math.log2(charsetSize);
+    return entropy;
+  }
+
+  /**
+   * Triggers a manual password regeneration by emitting a new event to the regeneration subject.
+   * This will cause a new password to be generated with the current options.
    */
   regeneratePassword() {
     this.regeneratePasswordSubject.next();
   }
 
-  // Inject the PasswordOptionsService to access password options
+  /**
+   * Creates a new instance of the PasswordGeneratorService.
+   * @param passwordOptionsService - Service that provides access to password generation options
+   */
   constructor(private passwordOptionsService: PasswordOptionsService) {}
 }
