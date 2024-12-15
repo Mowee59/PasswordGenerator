@@ -8,12 +8,18 @@ PasswordGenerator est une application Angular conçue pour générer des mots de
 
 ![Password Generator](https://github.com/user-attachments/assets/67ab2eee-9106-43e9-b5ce-a3c1cc0922e4)
 
+## Démo live
+
+[Démo live sur Github Pages](https://mowee59.github.io/PasswordGenerator/)
 
 ## Fonctionnalités
 
 - **Architecture réactive** : Utilisation de RxJS et des observables pour une gestion réactive des options de génération de mots de passe et de l'évaluation de leur force.
+- **Gestion efficace des souscriptions** : Mise en œuvre de pratiques optimales pour gérer les souscriptions aux observables, garantissant ainsi la libération des ressources et évitant les fuites de mémoire.
 - **Directives Angular** : Utilisation de directives Angular pour styliser le composant de curseur (slider) permettant de sélectionner la longueur du mot de passe.
 - **Évaluation de la force du mot de passe** : Calcul de l'entropie pour évaluer la force du mot de passe généré.
+- **Copie du Mot de Passe** : Fonctionnalité de copie du mot de passe compatible avec tous les types de navigateurs, utilisant l'API moderne du presse-papiers et des solutions alternatives pour les anciens navigateurs.
+
 
 ## Architecture
 
