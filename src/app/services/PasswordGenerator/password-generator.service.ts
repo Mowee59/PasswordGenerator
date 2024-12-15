@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { PasswordOptionsService } from '../PasswordOptions/password-options.service';
-import { combineLatest, map } from 'rxjs';
+import { combineLatest, map, BehaviorSubject } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 /**
  * Service responsible for generating passwords based on user-selected options.
@@ -10,6 +11,9 @@ import { combineLatest, map } from 'rxjs';
   providedIn: 'root',
 })
 export class PasswordGeneratorService {
+  // Subject to trigger password regeneration
+  private regeneratePasswordSubject = new BehaviorSubject<void>(undefined);
+
   /**
    * Observable stream that emits a new password whenever password options change.
    * Combines all password option streams and maps them to generate a new password.
@@ -20,6 +24,7 @@ export class PasswordGeneratorService {
     this.passwordOptionsService.includeLowercase$,
     this.passwordOptionsService.includeNumbers$,
     this.passwordOptionsService.includeSymbols$,
+    this.regeneratePasswordSubject.asObservable(),
   ]).pipe(
     map(
       ([
@@ -39,6 +44,8 @@ export class PasswordGeneratorService {
       },
     ),
   );
+
+  passwordSignal = toSignal(this.password$, { initialValue: '' });
 
   passwordStrength$ = combineLatest([
     this.passwordOptionsService.length$,
@@ -157,6 +164,13 @@ export class PasswordGeneratorService {
 
     // Normalize to 1-4 range
     return Math.max(1, Math.min(4, strength));
+  }
+
+  /**
+   * Triggers a password regeneration by emitting a new event to the subject.
+   */
+  regeneratePassword() {
+    this.regeneratePasswordSubject.next();
   }
 
   // Inject the PasswordOptionsService to access password options

@@ -1,13 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { PasswordGeneratorService } from '../../services/PasswordGenerator/password-generator.service';
 import { Observable, Subject, takeUntil } from 'rxjs';
-import { AsyncPipe } from '@angular/common';
 import { NgFor, NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-password-strength',
   standalone: true,
-  imports: [AsyncPipe, NgFor, NgClass],
+  imports: [ NgFor, NgClass],
   templateUrl: './password-strength.component.html',
   styleUrl: './password-strength.component.css',
 })
