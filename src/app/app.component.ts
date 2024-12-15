@@ -9,5 +9,5 @@ import { PasswordGeneratorComponent } from './components/password-generator/pass
   styleUrl: './app.component.css',
 })
 export class AppComponent {
-  title = 'PasswordGenerator';
+  title = 'Password Generator';
 }
