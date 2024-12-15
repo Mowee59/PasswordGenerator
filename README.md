@@ -18,7 +18,7 @@ PasswordGenerator est une application Angular conçue pour générer des mots de
 - **Gestion efficace des souscriptions** : Mise en œuvre de pratiques optimales pour gérer les souscriptions aux observables, garantissant ainsi la libération des ressources et évitant les fuites de mémoire.
 - **Directives Angular** : Utilisation de directives Angular pour styliser le composant de curseur (slider) permettant de sélectionner la longueur du mot de passe.
 - **Évaluation de la force du mot de passe** : Calcul de l'entropie pour évaluer la force du mot de passe généré.
-- **Copie du Mot de Passe** : Fonctionnalité de copie du mot de passe compatible avec tous les types de navigateurs, utilisant l'API moderne du presse-papiers et des solutions alternatives pour les anciens navigateurs.
+- **Copie du mot de passe** : Fonctionnalité de copie du mot de passe compatible avec tous les types de navigateurs, utilisant l'API moderne du presse-papiers et des solutions alternatives pour les anciens navigateurs.
 
 
 ## Architecture
