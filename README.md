@@ -48,7 +48,7 @@ Pour installer et exécuter ce projet localement, suivez les étapes ci-dessous 
    ```
 
 2. **Installer les dépendances :**
-   Assurez-vous d'avoir Node.js et npm installés, puis exécutez :
+   Assurez-vous d'avoir Node.js et yarn installés, puis exécutez :
    ```bash
    yarn install
    ```
@@ -60,11 +60,7 @@ Pour installer et exécuter ce projet localement, suivez les étapes ci-dessous 
    ```
    Accédez à l'application via `http://localhost:4200/`.
 
-4. **Construire le projet :**
-   Pour créer une version de production, exécutez :
-   ```bash
-   yarn run build
-   ```
+
 
 
 ## Contact
