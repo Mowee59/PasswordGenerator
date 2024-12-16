@@ -43,7 +43,7 @@ Pour installer et exécuter ce projet localement, suivez les étapes ci-dessous 
 
 1. **Cloner le dépôt :**
    ```bash
-   git clone https://github.com/username/password-generator.git
+   git clone https://github.com/mowee59/password-generator.git
    cd password-generator
    ```
 
