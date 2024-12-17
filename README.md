@@ -34,8 +34,9 @@ PasswordGenerator est une application Angular conçue pour générer des mots de
 
 ### Services
 
-- **PasswordGeneratorService** : Service responsable de la génération de mots de passe et de l'évaluation de leur force.
+- **PasswordGeneratorService** : Service responsable de la génération de mots de passe.
 - **PasswordOptionsService** : Gère les options de génération de mots de passe sélectionnées par l'utilisateur.
+- **PasswordStrengthService**: Service responsable de l'évaluation de la force des mots de passes.
 
 ## Installation
 
