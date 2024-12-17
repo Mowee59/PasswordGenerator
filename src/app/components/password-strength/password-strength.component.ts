@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { PasswordGeneratorService } from '../../services/PasswordGenerator/password-generator.service';
 import { Observable, Subject, takeUntil } from 'rxjs';
 import { NgFor, NgClass } from '@angular/common';
-
+import { PasswordStrengthService } from '../../services/password-strength.service';
 /**
  * Component responsible for displaying and managing the password strength indicator.
  * Shows both a text description and visual bars representing password strength levels.
@@ -10,7 +10,7 @@ import { NgFor, NgClass } from '@angular/common';
 @Component({
   selector: 'app-password-strength',
   standalone: true,
-  imports: [ NgFor, NgClass],
+  imports: [NgFor, NgClass],
   templateUrl: './password-strength.component.html',
   styleUrl: './password-strength.component.css',
 })
@@ -33,14 +33,17 @@ export class PasswordStrengthComponent implements OnInit, OnDestroy {
 
   /** Observable stream of password strength values */
   public passwordStrength$!: Observable<number>;
-  
+
   /** Current password strength value (1-4) */
   private passwordStrength!: number;
-  
+
   /** Subject for handling component cleanup */
   private destroy$ = new Subject<void>();
 
-  constructor(private passwordGeneratorService: PasswordGeneratorService) {}
+  constructor(
+    private passwordGeneratorService: PasswordGeneratorService,
+    private passwordStrengthService: PasswordStrengthService,
+  ) {}
 
   /**
    * Gets the CSS classes for the strength indicator bars
@@ -80,7 +83,7 @@ export class PasswordStrengthComponent implements OnInit, OnDestroy {
    * and subscribing to strength changes
    */
   ngOnInit(): void {
-    this.passwordStrength$ = this.passwordGeneratorService.passwordStrength$;
+    this.passwordStrength$ = this.passwordStrengthService.passwordStrength$;
     this.passwordStrength$
       .pipe(takeUntil(this.destroy$))
       .subscribe((value) => (this.passwordStrength = value));
